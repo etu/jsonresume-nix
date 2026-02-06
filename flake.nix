@@ -75,7 +75,7 @@
             name = "live-entr-reload-server";
             runtimeInputs = [
               pkgs.entr
-              pkgs.nodePackages.live-server
+              pkgs.nodePackages.browser-sync
               pkgs.xe
 
               # Include the desired builders program that cointains `resumed-render`
@@ -84,7 +84,7 @@
             text = ''
               resumed-render
 
-              live-server --watch=resume.html --open=resume.html --wait=300 &
+              browser-sync start --server --files resume.html --startPath resume.html --reload-delay 300 &
 
               # We want to not expand $1 in the xe argument
               # shellcheck disable=SC2016
@@ -102,7 +102,7 @@
             name = "print-to-pdf";
             runtimeInputs = [
               pkgs.puppeteer-cli
-              pkgs.nodePackages.live-server
+              pkgs.nodePackages.browser-sync
 
               # Include the desired builders program that cointains `resumed-render`
               builderDerivation
@@ -112,12 +112,12 @@
 
               resumed-render
 
-              live-server --host=127.0.0.1 --port="$PORT" --wait=300 --no-browser &
-              LIVE_SERVER_PID=$!
+              browser-sync start --server --host 127.0.0.1 --port "$PORT" --reload-delay 300 --no-open &
+              BROWSER_SYNC_PID=$!
 
               puppeteer print "http://127.0.0.1:$PORT/resume.html" resume.pdf --format ${format}
 
-              kill "$LIVE_SERVER_PID"
+              kill "$BROWSER_SYNC_PID"
             '';
           };
 
