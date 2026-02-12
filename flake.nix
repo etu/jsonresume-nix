@@ -72,16 +72,18 @@
       lib = {
         # Live server package that can be customized by users if needed.
         # Default uses Python's livereload library for live preview functionality.
-        # Users can override this in their flake by providing their own
-        # implementation in the buildLiveServer call if desired.
+        # Users can override this by passing a custom liveServerPackage to buildLiveServer.
         liveServerPackage = pkgs.python3.withPackages (ps: [ps.livereload]);
 
-        buildLiveServer = builderDerivation:
+        buildLiveServer = {
+          builderDerivation,
+          liveServerPackage ? self.lib.${system}.liveServerPackage,
+        }:
           pkgs.writeShellApplication {
             name = "live-entr-reload-server";
             runtimeInputs = [
               pkgs.entr
-              self.lib.${system}.liveServerPackage
+              liveServerPackage
               pkgs.xe
 
               # Include the desired builders program that contains `resumed-render`
