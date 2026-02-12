@@ -70,12 +70,15 @@
         };
 
       lib = {
+        # Live server package that can be customized by users
+        liveServerPackage = pkgs.python3.withPackages (ps: [ps.livereload]);
+
         buildLiveServer = builderDerivation:
           pkgs.writeShellApplication {
             name = "live-entr-reload-server";
             runtimeInputs = [
               pkgs.entr
-              pkgs.nodePackages.live-server
+              self.lib.${system}.liveServerPackage
               pkgs.xe
 
               # Include the desired builders program that cointains `resumed-render`
@@ -84,7 +87,20 @@
             text = ''
               resumed-render
 
-              live-server --watch=resume.html --open=resume.html --wait=300 &
+              # Start Python livereload server in the background
+              python3 -c '
+              from livereload import Server
+              import sys
+
+              server = Server()
+              server.watch("resume.html")
+              print("Starting live server on http://127.0.0.1:8080", file=sys.stderr)
+              print("Open http://127.0.0.1:8080/resume.html in your browser", file=sys.stderr)
+              server.serve(port=8080, host="127.0.0.1", root=".", open_url_delay=1)
+              ' &
+
+              # Give the server a moment to start
+              sleep 2
 
               # We want to not expand $1 in the xe argument
               # shellcheck disable=SC2016
@@ -102,7 +118,7 @@
             name = "print-to-pdf";
             runtimeInputs = [
               pkgs.puppeteer-cli
-              pkgs.nodePackages.live-server
+              pkgs.python3
 
               # Include the desired builders program that cointains `resumed-render`
               builderDerivation
@@ -112,12 +128,16 @@
 
               resumed-render
 
-              live-server --host=127.0.0.1 --port="$PORT" --wait=300 --no-browser &
-              LIVE_SERVER_PID=$!
+              # Start a simple HTTP server in the background
+              python3 -m http.server "$PORT" --bind 127.0.0.1 >/dev/null 2>&1 &
+              HTTP_SERVER_PID=$!
+
+              # Wait for server to start
+              sleep 1
 
               puppeteer print "http://127.0.0.1:$PORT/resume.html" resume.pdf --format ${format}
 
-              kill "$LIVE_SERVER_PID"
+              kill "$HTTP_SERVER_PID"
             '';
           };
 
