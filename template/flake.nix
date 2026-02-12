@@ -48,8 +48,8 @@
         live.type = "app";
         live.program = lib.getExe (jsonresume-nix.lib.${system}.buildLiveServer {
           builderDerivation = self.packages.${system}.builder;
-          # To customize the live server (e.g., use a different implementation):
-          # liveServerPackage = pkgs.python3.withPackages (ps: [ps.livereload]);
+          # Optionally override the live server implementation:
+          # liveServerPackage = <your-custom-package>;
         });
 
         print.type = "app";
