@@ -22,7 +22,7 @@ Formats supported:
 
 Create your own `resume` repository and run
 
-    nix flake init -t github:TaserudConsulting/jsonresume-nix
+    nix flake init -t github:etu/jsonresume-nix
 
 to clone the template to use this flake.
 
@@ -35,7 +35,7 @@ and that you at least stage the `flake.nix` file to be able to build.
 To change the theme used you'd just change the `defaultPackage` used,
 to list available packages you just run:
 
-    nix flake show github:TaserudConsulting/jsonresume-nix
+    nix flake show github:etu/jsonresume-nix
 
 Then nix will list available theme wrappers.
 
