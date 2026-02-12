@@ -70,7 +70,10 @@
         };
 
       lib = {
-        # Live server package that can be customized by users
+        # Live server package that can be customized by users if needed.
+        # Default uses Python's livereload library for live preview functionality.
+        # Users can override this in their flake by providing their own
+        # implementation in the buildLiveServer call if desired.
         liveServerPackage = pkgs.python3.withPackages (ps: [ps.livereload]);
 
         buildLiveServer = builderDerivation:
