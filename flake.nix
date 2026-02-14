@@ -102,8 +102,12 @@
               server.watch('resume.html')
               print('Starting live server on http://127.0.0.1:$LIVE_SERVER_PORT', file=sys.stderr)
               print('Open http://127.0.0.1:$LIVE_SERVER_PORT/resume.html in your browser', file=sys.stderr)
-              server.serve(port=$LIVE_SERVER_PORT, host='127.0.0.1', root='.', open_url_delay=1)
+              server.serve(port=$LIVE_SERVER_PORT, host='127.0.0.1', root='.', open_url_delay=1, default_filename='resume.html')
               " &
+              LIVE_SERVER_PID=$!
+
+              # Set up cleanup trap to kill the Python server on exit
+              trap 'kill $LIVE_SERVER_PID 2>/dev/null || true' EXIT INT TERM
 
               # Give the server a moment to start before starting the file watcher
               sleep 2
