@@ -92,8 +92,35 @@
             text = ''
               resumed-render
 
+              # Find an available port for the live server
+              find_available_port() {
+                local max_attempts=10
+                local attempt=0
+                local port
+
+                while [ $attempt -lt $max_attempts ]; do
+                  port=$(shuf -i 2000-65000 -n 1)
+
+                  # Check if port is available using Python socket
+                  if python3 -c "import socket; s = socket.socket(); s.bind(('127.0.0.1', $port)); s.close()" 2>/dev/null; then
+                    echo "$port"
+                    return 0
+                  fi
+
+                  attempt=$((attempt + 1))
+                done
+
+                echo "Failed to find an available port after $max_attempts attempts" >&2
+                return 1
+              }
+
+              # Get an available port
+              if ! LIVE_SERVER_PORT=$(find_available_port); then
+                echo "Error: Could not find an available port. Exiting." >&2
+                exit 1
+              fi
+
               # Start Python livereload server in the background
-              LIVE_SERVER_PORT=8080
               python3 -c "
               from livereload import Server
               import sys
@@ -102,8 +129,12 @@
               server.watch('resume.html')
               print('Starting live server on http://127.0.0.1:$LIVE_SERVER_PORT', file=sys.stderr)
               print('Open http://127.0.0.1:$LIVE_SERVER_PORT/resume.html in your browser', file=sys.stderr)
-              server.serve(port=$LIVE_SERVER_PORT, host='127.0.0.1', root='.', open_url_delay=1)
+              server.serve(port=$LIVE_SERVER_PORT, host='127.0.0.1', root='.', open_url_delay=1, default_filename='resume.html')
               " &
+              LIVE_SERVER_PID=$!
+
+              # Set up cleanup trap to kill the Python server on exit
+              trap 'kill $LIVE_SERVER_PID 2>/dev/null || true' EXIT INT TERM
 
               # Give the server a moment to start before starting the file watcher
               sleep 2
