@@ -96,9 +96,10 @@
               find_available_port() {
                 local max_attempts=10
                 local attempt=0
+                local port
                 
                 while [ $attempt -lt $max_attempts ]; do
-                  local port=$(shuf -i 2000-65000 -n 1)
+                  port=$(shuf -i 2000-65000 -n 1)
                   
                   # Check if port is available using Python socket
                   if python3 -c "import socket; s = socket.socket(); s.bind(('127.0.0.1', $port)); s.close()" 2>/dev/null; then
