@@ -114,8 +114,7 @@
               }
 
               # Get an available port
-              LIVE_SERVER_PORT=$(find_available_port)
-              if [ -z "$LIVE_SERVER_PORT" ]; then
+              if ! LIVE_SERVER_PORT=$(find_available_port); then
                 echo "Error: Could not find an available port. Exiting." >&2
                 exit 1
               fi
