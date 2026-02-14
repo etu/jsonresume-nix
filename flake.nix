@@ -97,19 +97,19 @@
                 local max_attempts=10
                 local attempt=0
                 local port
-                
+
                 while [ $attempt -lt $max_attempts ]; do
                   port=$(shuf -i 2000-65000 -n 1)
-                  
+
                   # Check if port is available using Python socket
                   if python3 -c "import socket; s = socket.socket(); s.bind(('127.0.0.1', $port)); s.close()" 2>/dev/null; then
                     echo "$port"
                     return 0
                   fi
-                  
+
                   attempt=$((attempt + 1))
                 done
-                
+
                 echo "Failed to find an available port after $max_attempts attempts" >&2
                 return 1
               }
